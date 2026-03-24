@@ -1,0 +1,206 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.21.1",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "34469c797c699c69d06768db4020256b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"exercise-1-from-program-to-trace-to-polynomial\">Exercise 1: From Program to Trace to Polynomial</h1>\n<span class=\"paragraph\"><strong>Goal</strong>: Understand how a program's execution becomes a polynomial that a proof system can reason about.</span>\n<span class=\"paragraph\">We'll work over <strong>F_97</strong> (the field of integers mod 97) so every number is small and hand-checkable.</span>\n<h2 id=\"the-program\">The \"program\"</h2>\n<span class=\"paragraph\">Our toy program computes <code>output = a * b + c</code>. That's it, one multiplication, one addition.\nThink of it as a 2-cycle CPU:</span>\n<table>\n<thead>\n<tr>\n<th>Cycle</th>\n<th>Operation</th>\n<th>Inputs</th>\n<th>Output</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>0</td>\n<td>MUL</td>\n<td>a=3, b=5</td>\n<td>15</td>\n</tr>\n<tr>\n<td>1</td>\n<td>ADD</td>\n<td>15, c=7</td>\n<td>22</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\">The program's claim: <strong>\"given inputs (3, 5, 7), the output is 22\"</strong>.</span>\n<span class=\"paragraph\">A zkVM proves this claim without revealing the intermediate value 15.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "74ef6f599ee7d8a61929cec7b36559cb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "5f9f3a3e205b047c3916e0793b1a0571",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-1-the-execution-trace\">Step 1: The Execution Trace</h2>\n<span class=\"paragraph\">The trace is a table where each row is one \"cycle\" and each column is a wire.\nThis is the <strong>witness</strong>, the private data the prover knows.</span>\n<span class=\"paragraph\">Our tiny CPU has 4 wires per cycle:</span>\n<ul>\n<li><code>left</code>: left input</li>\n<li><code>right</code>: right input</li>\n<li><code>out</code>: output of the operation</li>\n<li><code>op</code>: 0 = MUL, 1 = ADD</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "f00082613d5fdc3fe165c7cfa2c87e37",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Trace has T = 2 cycles\n\n  Cycle 0: MUL(3, 5) = 15\n  Cycle 1: ADD(16, 7) = 22\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "6e181c15e81a1e5cfd7008cba562592d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-2-from-trace-column-to-polynomial-mle\">Step 2: From Trace Column to Polynomial (MLE)</h2>\n<span class=\"paragraph\">Each column of the trace is a vector of T=2 values. We turn it into a <strong>multilinear polynomial</strong>\nusing the Multilinear Extension (MLE).</span>\n<span class=\"paragraph\">Since T = 2 = 2^1, we need <strong>n = 1 variable</strong>. Each cycle gets a 1-bit address:</span>\n<ul>\n<li>Cycle 0 -&gt; address <code>(0)</code></li>\n<li>Cycle 1 -&gt; address <code>(1)</code></li>\n</ul>\n<span class=\"paragraph\">The MLE formula for 1 variable is simply:</span>\n<marimo-tex class=\"arithmatex\">||[\\widetilde{f}(x) = f(0) \\cdot (1 - x) + f(1) \\cdot x||]</marimo-tex><span class=\"paragraph\">This is just linear interpolation! Let's compute it for the <code>left</code> column: values [3, 15].</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "aa2a5845379dadc98368200452e64907",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Checking left_mle on boolean points:\n  left~(0) = 3  (expected: 3)\n  left~(1) = 16  (expected: 16)\n  \u2713 Matches!\n\n  left~(50) = 71  <- this is the polynomial 'between' the data\n\n  Explicit: left~(x) = 3 + 13\u00b7x  (mod 97)\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Xref",
+      "code_hash": "a76a22f3b7aad6b6b1975f0540031ee1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-3-build-mles-for-all-columns\">Step 3: Build MLEs for All Columns</h2>\n<span class=\"paragraph\">Now let's generalize. We'll build a function that takes any column and returns its MLE.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "1744790e20bfd5b9ff481f7fa6b32e06",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Verifying all column MLEs on {0, 1}:\n  left~(0) = 3  (expected 3) \u2713\n  left~(1) = 16  (expected 16) \u2713\n  right~(0) = 5  (expected 5) \u2713\n  right~(1) = 7  (expected 7) \u2713\n  out~(0) = 15  (expected 15) \u2713\n  out~(1) = 22  (expected 22) \u2713\n  op~(0) = 0  (expected 0) \u2713\n  op~(1) = 1  (expected 1) \u2713\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "0538c5cdcdb081188ceae2469ef91da0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-4-the-constraint-polynomial\">Step 4: The Constraint Polynomial</h2>\n<span class=\"paragraph\">Now here's where it gets interesting. The CPU has a <strong>rule</strong>: at every cycle, the output\nmust be correct. The constraint is:</span>\n<marimo-tex class=\"arithmatex\">||[\\text{out}(t) = (1 - \\text{op}(t)) \\cdot \\text{left}(t) \\cdot \\text{right}(t) + \\text{op}(t) \\cdot (\\text{left}(t) + \\text{right}(t))||]</marimo-tex><ul>\n<li>When op=0 (MUL): out = left * right</li>\n<li>When op=1 (ADD): out = left + right</li>\n</ul>\n<span class=\"paragraph\">If the trace is valid, this constraint holds at <strong>every boolean point</strong> (every cycle).\nLet's check:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "e45de5f34ce7cd47ab9bce54b6a91fb8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Constraint check on each cycle:\n  C(0) = 0  \u2713 satisfied!\n  C(1) = 96  \u2717 VIOLATION!\n\n  C(42) = 51  (random point... is it still 0?)\n  It's 51, not 0. The constraint polynomial has degree > 1\n(because of the multiplication left\u00b7right, the MLE structure doesn't guarantee\n  that the constraint poly is zero beyond the hypercube)\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "2caef4f497d94cb4a8ecc0c7b73bab77",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"key-insight-why-sumcheck\">Key Insight: Why Sumcheck?</h2>\n<span class=\"paragraph\">The constraint polynomial is <strong>zero on the boolean hypercube</strong> (on actual cycles), but might not be zero elsewhere. That's fine, we only care about the boolean points.</span>\n<span class=\"paragraph\">The verifier wants to check:</span>\n<marimo-tex class=\"arithmatex\">||[\\sum_{x \\in \\{0,1\\}^n} C(x) = 0||]</marimo-tex><span class=\"paragraph\">This is exactly what <strong>sumcheck</strong> does! It turns \"check a sum over <marimo-tex class=\"arithmatex\">||(2^n||)</marimo-tex> points\" into \"check one evaluation at a random point\", in <marimo-tex class=\"arithmatex\">||(n||)</marimo-tex> interactive rounds.</span>\n<span class=\"paragraph\">For our toy example with <marimo-tex class=\"arithmatex\">||(n=1||)</marimo-tex>, sumcheck is trivially one round. But the structure scales: a real Jolt trace with T=65536 cycles uses <marimo-tex class=\"arithmatex\">||(n=16||)</marimo-tex> variables and 16 sumcheck rounds, and the verifier never touches the <marimo-tex class=\"arithmatex\">||(2^{16}||)</marimo-tex> individual rows.</span>\n<hr />\n<h2 id=\"summary\">Summary</h2>\n<table>\n<thead>\n<tr>\n<th>Concept</th>\n<th>Concrete Example</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Program</td>\n<td><code>output = a*b + c</code></td>\n</tr>\n<tr>\n<td>Execution trace</td>\n<td>2 cycles x 4 wires = 8 field elements</td>\n</tr>\n<tr>\n<td>Column -&gt; polynomial</td>\n<td><code>left~(x) = 3 + 12x</code> over F_97</td>\n</tr>\n<tr>\n<td>Constraint</td>\n<td><code>out = (1-op)\u00b7left\u00b7right + op\u00b7(left+right)</code></td>\n</tr>\n<tr>\n<td>Validity check</td>\n<td>C(x) = 0 for all x in {0,1}^1</td>\n</tr>\n<tr>\n<td>What sumcheck proves</td>\n<td>Sum of C(x) = 0 without checking each row</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\"><strong>Next</strong>: Exercise 2 will run sumcheck on this constraint to see how the\nverifier checks validity with just one random evaluation.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "3370b2762500a0dcd0a16c4c52f6f7d7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"exercises-try-before-moving-on\">Exercises (try before moving on!)</h2>\n<span class=\"paragraph\"><strong>1.</strong> What happens if the prover lies and sets <code>out[0] = 16</code> instead of 15? Modify the trace above and re-run. Does the constraint check catch it?</span>\n<blockquote>\n<span class=\"paragraph\">In the constraint check we obtain: <code>C(0) = 0  \u2713 satisfied! C(1) = 96  \u2717 VIOLATION!</code>.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>2.</strong> Compute <code>right~(50)</code> by hand. The values are [5, 7], so: <code>right~(x) = 5\u00b7(1-x) + 7\u00b7x = 5 + 2x</code>. What's <code>right~(50) mod 97</code>?</span>\n<marimo-tex class=\"arithmatex\">||[\\text{right}~(50) = 5 + 2 \\times 50 \\mod 97 = 8||]</marimo-tex><span class=\"paragraph\"><strong>3.</strong> Why can't we just check <code>C(0) + C(1) = 0</code> directly without sumcheck?\nBecause a cheating prover can make the sum cancel to zero even with invalid constraints. In F_97, if the prover submits a bad trace where:</span>\n<span class=\"paragraph\">C(0) = 5    \u2190 constraint violated at cycle 0\n  C(1) = 92   \u2190 constraint violated at cycle 1</span>\n<span class=\"paragraph\">Then C(0) + C(1) = 5 + 92 = 97 = 0 mod 97. The sum is zero, but neither constraint is satisfied. The violations cancel out.</span>\n<span class=\"paragraph\">What sumcheck does differently is that it doesn't just check the sum. It introduces a random challenge r and ultimately checks C(r) at a random point. A cheating prover would need to make C zero at a point they can't predict in advance. By Schwartz-Zippel, a nonzero degree-d polynomial has at most d roots out of 97 possible values \u2014 so the chance of getting lucky is tiny (d/97 in our toy field, d/2\u00b2\u2075\u2074 in real systems).</span>\n<span class=\"paragraph\">The sum check \u03a3 C(x) = 0 is just the starting claim. The protocol then reduces it to a single random evaluation, which is what actually provides soundness.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

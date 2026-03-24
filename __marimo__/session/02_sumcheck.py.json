@@ -1,0 +1,311 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.21.1",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1af6416590ae8dd8db7fc9ecdd8bc8e5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"exercise-2-the-sumcheck-protocol\">Exercise 2: The Sumcheck Protocol</h1>\n<span class=\"paragraph\"><strong>Goal</strong>: Run sumcheck by hand on a concrete constraint polynomial. See how\n\"check a sum over all rows\" reduces to \"check one evaluation at a random point.\"</span>\n<span class=\"paragraph\">We'll upgrade our toy CPU to <strong>4 cycles</strong> (n=2 variables) so sumcheck has\n2 rounds and the halving pattern is visible.</span>\n<hr />\n<h2 id=\"setup-a-4-cycle-program-over-f_97\">Setup: A 4-cycle program over F_97</h2>\n<span class=\"paragraph\">The program: <code>result = ((a * b) + c) * d</code></span>\n<table>\n<thead>\n<tr>\n<th>Cycle</th>\n<th>Op</th>\n<th>Left</th>\n<th>Right</th>\n<th>Out</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>0</td>\n<td>MUL</td>\n<td>3</td>\n<td>5</td>\n<td>15</td>\n</tr>\n<tr>\n<td>1</td>\n<td>ADD</td>\n<td>15</td>\n<td>7</td>\n<td>22</td>\n</tr>\n<tr>\n<td>2</td>\n<td>MUL</td>\n<td>22</td>\n<td>4</td>\n<td>88</td>\n</tr>\n<tr>\n<td>3</td>\n<td>ADD</td>\n<td>88</td>\n<td>0</td>\n<td>88</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\">Cycle 3 is padding (add 0) to reach a power of 2.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "346ea3108a7b8553f1500ad721afa963",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "7f65a25bf9e5aecfceb04a301e5ebe09",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "397ba2dea7014d2ca6d0bcc46e2c24ed",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-1-mles-with-2-variables\">Step 1: MLEs with 2 variables</h2>\n<span class=\"paragraph\">With T=4 cycles, we need n=2 variables (since 2^2 = 4). Each cycle gets a 2-bit address:</span>\n<table>\n<thead>\n<tr>\n<th>Cycle</th>\n<th>Address (x1, x2)</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>0</td>\n<td>(0, 0)</td>\n</tr>\n<tr>\n<td>1</td>\n<td>(0, 1)</td>\n</tr>\n<tr>\n<td>2</td>\n<td>(1, 0)</td>\n</tr>\n<tr>\n<td>3</td>\n<td>(1, 1)</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\">The MLE formula for 2 variables uses the eq polynomial as selector:</span>\n<marimo-tex class=\"arithmatex\">||[\\widetilde{f}(x_1, x_2) = \\sum_{b \\in \\{0,1\\}^2} f(b) \\cdot \\widetilde{eq}((x_1,x_2), b)||]</marimo-tex><span class=\"paragraph\">where <marimo-tex class=\"arithmatex\">||(\\widetilde{eq}((x_1,x_2),(b_1,b_2)) = [(1-x_1)(1-b_1) + x_1 b_1] \\cdot [(1-x_2)(1-b_2) + x_2 b_2]||)</marimo-tex></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "0f747bec1df8d8c34e1b0647d4446106",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "c375ef0a5a2362d2eb454685c0cb455b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Verifying MLEs on the boolean hypercube:\n  left~(0,0) = 3  (expected 3) \u2713\n  left~(0,1) = 15  (expected 15) \u2713\n  left~(1,0) = 22  (expected 22) \u2713\n  left~(1,1) = 88  (expected 88) \u2713\n  right~(0,0) = 5  (expected 5) \u2713\n  right~(0,1) = 7  (expected 7) \u2713\n  right~(1,0) = 4  (expected 4) \u2713\n  right~(1,1) = 0  (expected 0) \u2713\n  out~(0,0) = 15  (expected 15) \u2713\n  out~(0,1) = 22  (expected 22) \u2713\n  out~(1,0) = 88  (expected 88) \u2713\n  out~(1,1) = 88  (expected 88) \u2713\n  op~(0,0) = 0  (expected 0) \u2713\n  op~(0,1) = 1  (expected 1) \u2713\n  op~(1,0) = 0  (expected 0) \u2713\n  op~(1,1) = 1  (expected 1) \u2713\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Xref",
+      "code_hash": "fb194d4bc4e141a3b2165ba3f24c5822",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-2-the-constraint-polynomial-2-variables\">Step 2: The constraint polynomial (2 variables)</h2>\n<span class=\"paragraph\">Same rule as before, but now <code>C(x1, x2)</code> is a polynomial in two variables:</span>\n<marimo-tex class=\"arithmatex\">||[C(x_1, x_2) = \\text{out}(x_1,x_2) - [(1-\\text{op}) \\cdot \\text{left} \\cdot \\text{right} + \\text{op} \\cdot (\\text{left} + \\text{right})]||]</marimo-tex><span class=\"paragraph\">It should be 0 at all four boolean points (all four cycles are valid).</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "bc8fcf23a8ab65709e6dce44add36166",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Constraint check on all 4 cycles:\n  C(0,0) [cycle 0] = 0  \u2713\n  C(0,1) [cycle 1] = 0  \u2713\n  C(1,0) [cycle 2] = 0  \u2713\n  C(1,1) [cycle 3] = 0  \u2713\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "0d933bdcea48420dedff01ad28d48f1b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-3-the-claim\">Step 3: The claim</h2>\n<span class=\"paragraph\">The verifier wants to check:</span>\n<marimo-tex class=\"arithmatex\">||[H = \\sum_{(x_1, x_2) \\in \\{0,1\\}^2} C(x_1, x_2) = 0||]</marimo-tex><span class=\"paragraph\">They could evaluate C at all 4 points and add them up. But in a real system\nwith T=65536 cycles that means touching all <marimo-tex class=\"arithmatex\">||(2^{16}||)</marimo-tex> rows, which defeats the purpose.</span>\n<span class=\"paragraph\"><strong>Sumcheck lets the verifier check this sum using only 2 rounds (= n variables)\nand one final evaluation of C.</strong></span>\n<span class=\"paragraph\">Let's compute the actual sum first to confirm it's 0:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "db265433a8643001f2c8ad110423e154",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Computing H = \u03a3 C(x1,x2) over {0,1}\u00b2:\n  C(0,0) = 0\n  C(0,1) = 0\n  C(1,0) = 0\n  C(1,1) = 0\n\n  H = 0  \u2713 sum is 0!\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "f4de5d4809ced4857204ce1ab736beef",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-4-sumcheck-round-1\">Step 4: Sumcheck Round 1</h2>\n<span class=\"paragraph\">The prover needs to convince the verifier that <marimo-tex class=\"arithmatex\">||(H = 0||)</marimo-tex> without the verifier\nevaluating C at all 4 points.</span>\n<span class=\"paragraph\"><strong>Round 1</strong>: The prover \"peels off\" variable <marimo-tex class=\"arithmatex\">||(x_1||)</marimo-tex>. They compute a univariate polynomial:</span>\n<marimo-tex class=\"arithmatex\">||[s_1(X) = \\sum_{x_2 \\in \\{0,1\\}} C(X, x_2)||]</marimo-tex><span class=\"paragraph\">This sums over the remaining variable (<marimo-tex class=\"arithmatex\">||(x_2||)</marimo-tex>), leaving a polynomial in <marimo-tex class=\"arithmatex\">||(X||)</marimo-tex> alone.</span>\n<span class=\"paragraph\">The verifier checks: <marimo-tex class=\"arithmatex\">||(s_1(0) + s_1(1) = H = 0||)</marimo-tex></span>\n<span class=\"paragraph\">Why does this work? When you plug in <marimo-tex class=\"arithmatex\">||(X=0||)</marimo-tex> and <marimo-tex class=\"arithmatex\">||(X=1||)</marimo-tex> and add:</span>\n<ul>\n<li><marimo-tex class=\"arithmatex\">||(s_1(0) = C(0,0) + C(0,1)||)</marimo-tex></li>\n<li><marimo-tex class=\"arithmatex\">||(s_1(1) = C(1,0) + C(1,1)||)</marimo-tex></li>\n<li><marimo-tex class=\"arithmatex\">||(s_1(0) + s_1(1) = C(0,0) + C(0,1) + C(1,0) + C(1,1) = H||)</marimo-tex> \u2713</li>\n</ul>\n<span class=\"paragraph\">Let's compute <marimo-tex class=\"arithmatex\">||(s_1||)</marimo-tex> as a table of values:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "a3b201105cab938a0d1759a056accadc",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Prover computes s1(X) = C(X,0) + C(X,1):\n  s1(0) = C(0,0) + C(0,1) = 0 + 0 = 0\n  s1(1) = C(1,0) + C(1,1) = 0 + 0 = 0\n\nVerifier checks: s1(0) + s1(1) = 0 + 0 = 0\n  Expected H = 0\n  \u2713 Match!\n\nVerifier samples random r1 = 23\n  New claim: s1(23) = 11\n  This means: \u03a3_{x2} C(23, x2) should equal 11\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "cad03651375c18612f1b0064171792e1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-5-sumcheck-round-2\">Step 5: Sumcheck Round 2</h2>\n<span class=\"paragraph\">After round 1, the claim has been reduced from:</span>\n<ul>\n<li>\"the sum over both variables is 0\"</li>\n</ul>\n<span class=\"paragraph\">to:</span>\n<ul>\n<li>\"the sum over x2 alone, with x1 fixed to r1, equals s1(r1)\"</li>\n</ul>\n<span class=\"paragraph\"><strong>Round 2</strong>: The prover computes:</span>\n<marimo-tex class=\"arithmatex\">||[s_2(X) = C(r_1, X)||]</marimo-tex><span class=\"paragraph\">No more summing, there's only one variable left! The verifier checks: <marimo-tex class=\"arithmatex\">||(s_2(0) + s_2(1) = s_1(r_1)||)</marimo-tex></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "8fa47e302cbcd842c77b5a9472929c2e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Prover computes s2(X) = C(23, X):\n  s2(0) = C(23, 0) = 11\n  s2(1) = C(23, 1) = 0\n\nVerifier checks: s2(0) + s2(1) = 11 + 0 = 11\n  Expected (from round 1): s1(23) = 11\n  \u2713 Match!\n\nVerifier samples random r2 = 71\n  Final claim: C(23, 71) should equal 92\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "iLit",
+      "code_hash": "1632b7e9349b77c75305c7fe5caf7665",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-6-the-final-check\">Step 6: The Final Check</h2>\n<span class=\"paragraph\">After n=2 rounds, sumcheck has reduced the claim to a <strong>single evaluation</strong>:</span>\n<marimo-tex class=\"arithmatex\">||[C(r_1, r_2) = \\text{final\\_claim}||]</marimo-tex><span class=\"paragraph\">The verifier now evaluates <marimo-tex class=\"arithmatex\">||(C(r_1, r_2)||)</marimo-tex> directly (or gets this from an oracle/PCS).</span>\n<span class=\"paragraph\">This is the moment of truth: if the prover was honest, the values match.\nIf the prover cheated, Schwartz-Zippel says they get caught with high probability.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "b07be8f9981bf446b004776d22ca07ea",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Final verification:\n  Claimed: C(23, 71) = 92\n  Actual:  C(23, 71) = 92\n  \u2713 SUMCHECK PASSES!\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "798d7f529c18f2d5a9df0ff0cac27381",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"what-just-happened\">What just happened?</h2>\n<span class=\"paragraph\">Tracing the full protocol:</span>\n<div class=\"language-actionscript3 codehilite\"><pre><span></span><code><span class=\"n\">Claim</span><span class=\"o\">:</span><span class=\"w\"> </span><span class=\"n\">H</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"err\">\u03a3</span><span class=\"w\"> </span><span class=\"n\">C</span><span class=\"o\">(</span><span class=\"n\">x1</span><span class=\"o\">,</span><span class=\"n\">x2</span><span class=\"o\">)</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"mi\">0</span>\n<span class=\"w\">                </span><span class=\"err\">\u2502</span>\n<span class=\"n\">Round</span><span class=\"w\"> </span><span class=\"mi\">1</span><span class=\"o\">:</span><span class=\"w\">  </span><span class=\"n\">Prover</span><span class=\"w\"> </span><span class=\"n\">sends</span><span class=\"w\"> </span><span class=\"n\">s1</span><span class=\"o\">(</span><span class=\"n\">X</span><span class=\"o\">)</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"err\">\u03a3</span><span class=\"n\">_</span><span class=\"o\">{</span><span class=\"n\">x2</span><span class=\"o\">}</span><span class=\"w\"> </span><span class=\"n\">C</span><span class=\"o\">(</span><span class=\"n\">X</span><span class=\"o\">,</span><span class=\"w\"> </span><span class=\"n\">x2</span><span class=\"o\">)</span>\n<span class=\"w\">          </span><span class=\"n\">Verifier</span><span class=\"w\"> </span><span class=\"n\">checks</span><span class=\"o\">:</span><span class=\"w\"> </span><span class=\"n\">s1</span><span class=\"o\">(</span><span class=\"mi\">0</span><span class=\"o\">)</span><span class=\"w\"> </span><span class=\"o\">+</span><span class=\"w\"> </span><span class=\"n\">s1</span><span class=\"o\">(</span><span class=\"mi\">1</span><span class=\"o\">)</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"n\">H</span><span class=\"w\">     </span><span class=\"err\">\u2713</span>\n<span class=\"w\">          </span><span class=\"n\">Verifier</span><span class=\"w\"> </span><span class=\"n\">samples</span><span class=\"w\"> </span><span class=\"n\">r1</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"mi\">23</span>\n<span class=\"w\">          </span><span class=\"n\">New</span><span class=\"w\"> </span><span class=\"n\">claim</span><span class=\"o\">:</span><span class=\"w\"> </span><span class=\"err\">\u03a3</span><span class=\"n\">_</span><span class=\"o\">{</span><span class=\"n\">x2</span><span class=\"o\">}</span><span class=\"w\"> </span><span class=\"n\">C</span><span class=\"o\">(</span><span class=\"mi\">23</span><span class=\"o\">,</span><span class=\"w\"> </span><span class=\"n\">x2</span><span class=\"o\">)</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"n\">s1</span><span class=\"o\">(</span><span class=\"mi\">23</span><span class=\"o\">)</span>\n<span class=\"w\">                </span><span class=\"err\">\u2502</span>\n<span class=\"n\">Round</span><span class=\"w\"> </span><span class=\"mi\">2</span><span class=\"o\">:</span><span class=\"w\">  </span><span class=\"n\">Prover</span><span class=\"w\"> </span><span class=\"n\">sends</span><span class=\"w\"> </span><span class=\"n\">s2</span><span class=\"o\">(</span><span class=\"n\">X</span><span class=\"o\">)</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"n\">C</span><span class=\"o\">(</span><span class=\"mi\">23</span><span class=\"o\">,</span><span class=\"w\"> </span><span class=\"n\">X</span><span class=\"o\">)</span>\n<span class=\"w\">          </span><span class=\"n\">Verifier</span><span class=\"w\"> </span><span class=\"n\">checks</span><span class=\"o\">:</span><span class=\"w\"> </span><span class=\"n\">s2</span><span class=\"o\">(</span><span class=\"mi\">0</span><span class=\"o\">)</span><span class=\"w\"> </span><span class=\"o\">+</span><span class=\"w\"> </span><span class=\"n\">s2</span><span class=\"o\">(</span><span class=\"mi\">1</span><span class=\"o\">)</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"n\">s1</span><span class=\"o\">(</span><span class=\"mi\">23</span><span class=\"o\">)</span><span class=\"w\"> </span><span class=\"err\">\u2713</span>\n<span class=\"w\">          </span><span class=\"n\">Verifier</span><span class=\"w\"> </span><span class=\"n\">samples</span><span class=\"w\"> </span><span class=\"n\">r2</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"mi\">71</span>\n<span class=\"w\">          </span><span class=\"n\">New</span><span class=\"w\"> </span><span class=\"n\">claim</span><span class=\"o\">:</span><span class=\"w\"> </span><span class=\"n\">C</span><span class=\"o\">(</span><span class=\"mi\">23</span><span class=\"o\">,</span><span class=\"w\"> </span><span class=\"mi\">71</span><span class=\"o\">)</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"n\">s2</span><span class=\"o\">(</span><span class=\"mi\">71</span><span class=\"o\">)</span>\n<span class=\"w\">                </span><span class=\"err\">\u2502</span>\n<span class=\"n\">Final</span><span class=\"o\">:</span><span class=\"w\">    </span><span class=\"n\">Verifier</span><span class=\"w\"> </span><span class=\"n\">evaluates</span><span class=\"w\"> </span><span class=\"n\">C</span><span class=\"o\">(</span><span class=\"mi\">23</span><span class=\"o\">,</span><span class=\"w\"> </span><span class=\"mi\">71</span><span class=\"o\">)</span><span class=\"w\"> </span><span class=\"n\">directly</span><span class=\"w\">    </span><span class=\"err\">\u2713</span>\n</code></pre></div>\n<span class=\"paragraph\"><strong>The verifier never looked at all 4 rows of the trace!</strong></span>\n<span class=\"paragraph\">They checked:</span>\n<ol>\n<li>One consistency check per round (s(0) + s(1) = previous claim)</li>\n<li>One final evaluation C(r1, r2)</li>\n</ol>\n<span class=\"paragraph\">That's it. For a real Jolt trace with 65536 rows and 16 variables, the verifier does\n16 consistency checks + 1 final evaluation, instead of touching all 65536 rows.</span>\n<hr />\n<h2 id=\"the-verifiers-work-vs-the-provers-work\">The verifier's work vs the prover's work</h2>\n<table>\n<thead>\n<tr>\n<th></th>\n<th>Prover</th>\n<th>Verifier</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Round 1</td>\n<td>Sum C(X, 0)+C(X,1) for many X values</td>\n<td>Check s1(0)+s1(1)=H, pick r1</td>\n</tr>\n<tr>\n<td>Round 2</td>\n<td>Evaluate C(r1, X) for a few X values</td>\n<td>Check s2(0)+s2(1)=s1(r1), pick r2</td>\n</tr>\n<tr>\n<td>Final</td>\n<td>\u2014</td>\n<td>Evaluate C(r1, r2)</td>\n</tr>\n<tr>\n<td><strong>Total</strong></td>\n<td><strong>O(2^n) work</strong></td>\n<td><strong>O(n) checks + 1 evaluation</strong></td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\">The prover does the heavy lifting. The verifier is cheap. This asymmetry is\nthe whole point of sumcheck (and SNARKs in general).</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "b8779b4d0cfbc5b2f601fc9f36c3f95b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"why-does-this-catch-cheaters\">Why does this catch cheaters?</h2>\n<span class=\"paragraph\">Suppose the prover has a <strong>bad trace</strong> (some constraint is violated, so the real sum H' != 0)\nbut they claim H = 0.</span>\n<ul>\n<li><strong>Round 1</strong>: They must send some fake <marimo-tex class=\"arithmatex\">||(\\hat{s}_1||)</marimo-tex> with <marimo-tex class=\"arithmatex\">||(\\hat{s}_1(0) + \\hat{s}_1(1) = 0||)</marimo-tex>.\n  But the real <marimo-tex class=\"arithmatex\">||(s_1||)</marimo-tex> has <marimo-tex class=\"arithmatex\">||(s_1(0) + s_1(1) = H' \\neq 0||)</marimo-tex>.\n  So <marimo-tex class=\"arithmatex\">||(\\hat{s}_1 \\neq s_1||)</marimo-tex> as polynomials.\n  Two different degree-d polynomials agree on at most d points out of 97.\n  The verifier picks <marimo-tex class=\"arithmatex\">||(r_1||)</marimo-tex> randomly -&gt; probability of <marimo-tex class=\"arithmatex\">||(\\hat{s}_1(r_1) = s_1(r_1)||)</marimo-tex> is at most <marimo-tex class=\"arithmatex\">||(d/97||)</marimo-tex>.</li>\n<li><strong>If they get unlucky</strong> (which is almost certain): <marimo-tex class=\"arithmatex\">||(\\hat{s}_1(r_1) \\neq s_1(r_1)||)</marimo-tex>,\n  so the claim going into round 2 is wrong, and the error propagates.</li>\n<li><strong>Final check</strong>: The verifier evaluates <marimo-tex class=\"arithmatex\">||(C(r_1, r_2)||)</marimo-tex> directly. If any round was\n  dishonest, this won't match.</li>\n</ul>\n<span class=\"paragraph\">In real systems over 254-bit fields, the cheating probability is <marimo-tex class=\"arithmatex\">||(\\sim d/2^{254}||)</marimo-tex> per round. Negligible.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "4e51733f9e94baa4fb6a0de763d453fa",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"exercises\">Exercises</h2>\n<span class=\"paragraph\"><strong>1.</strong> Change <code>r1</code> to a different value (say 50) and re-run. Does sumcheck still pass? </span>\n<blockquote>\n<span class=\"paragraph\">Yes, it should pass for any r1.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>2.</strong> Corrupt the trace: set <code>out[2] = 89</code> instead of 88. What happens to H? Does sumcheck catch it?</span>\n<blockquote>\n<span class=\"paragraph\">H becomes 1 (not 0), which means the constraint is violated. Sumcheck would catch this at the very first step: the verifier knows the sum must be 0, so when the prover sends s1 and the verifier computes s1(0) + s1(1) = 1 \u2260 0, it rejects immediately. The notebook doesn't show this because it checks against the computed H rather than the hardcoded target of 0, but in the real protocol the verifier never computes H, they just check against 0.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>3.</strong> In our 2-round sumcheck, how many field elements does the prover send total? <em>(Count: s1 needs enough points to describe a degree-d polynomial, same for s2.)</em></span>\n<blockquote>\n<span class=\"paragraph\">The prover sends 8 field elements total (4 per round). Each round polynomial has degree 3 (because the constraint multiplies three degree-1 polynomials: (1-op) \u00b7 left \u00b7 right), and a degree-3 polynomial needs 4 evaluation points for the verifier to reconstruct it and evaluate at the random challenge. So it's 2 rounds \u00d7 4 elements = 8.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>4.</strong> In real Jolt with T=65536 cycles (n=16 variables), how many rounds does sumcheck take? How many consistency checks does the verifier do? Compare to the 65536 rows the verifier <em>doesn't</em> touch.</span>\n<blockquote>\n<span class=\"paragraph\">16 rounds, 16 consistency checks, 1 final evaluation.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>Next</strong>: Exercise 3 will make this non-interactive using Fiat-Shamir (hash the prover's messages to get the challenges).</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}
