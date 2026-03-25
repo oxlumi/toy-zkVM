@@ -1,0 +1,225 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.21.1",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "5ef6e1b7d1c6c823139c3701a9b177a9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"exercise-3-fiat-shamir-making-sumcheck-non-interactive\">Exercise 3: Fiat-Shamir. Making Sumcheck Non-Interactive</h1>\n<span class=\"paragraph\"><strong>Goal</strong>: Replace the interactive verifier (who picks random challenges) with a hash function, so the prover can generate the entire proof alone and anyone can verify it later.</span>\n<hr />\n<h2 id=\"the-problem-with-interactive-sumcheck\">The problem with interactive sumcheck</h2>\n<span class=\"paragraph\">In Exercise 2, the protocol was a <strong>conversation</strong>:</span>\n<div class=\"language-text codehilite\"><pre><span></span><code>Prover \u2192 sends s1          \u2192 Verifier\nProver \u2190 receives r1 = 23  \u2190 Verifier (picks randomly)\nProver \u2192 sends s2          \u2192 Verifier\nProver \u2190 receives r2 = 71  \u2190 Verifier (picks randomly)\n</code></pre></div>\n<span class=\"paragraph\">This requires the verifier to be online, picking fresh random challenges. That's fine in theory, but useless for blockchains, you need a proof you can post once and anyone can check later.</span>\n<h2 id=\"the-fiat-shamir-trick\">The Fiat-Shamir trick</h2>\n<span class=\"paragraph\">Replace \"verifier picks random r\" with \"hash everything so far to get r\":</span>\n<div class=\"language-text codehilite\"><pre><span></span><code>r1 = Hash(s1)\nr2 = Hash(s1, r1, s2)\n</code></pre></div>\n<span class=\"paragraph\">The challenges are now <strong>deterministic</strong>, so anyone can recompute them from the proof. But they're still <strong>unpredictable to the prover</strong> at the time they choose s1, because they can't control the hash output.</span>\n<span class=\"paragraph\">This is called the <strong>Fiat-Shamir heuristic</strong> (or transform).</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "346ea3108a7b8553f1500ad721afa963",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "c7a9b8000498d3bfe8e179046fbad048",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-1-a-toy-hash-function-the-transcript\">Step 1: A toy hash function (the \"transcript\")</h2>\n<span class=\"paragraph\">In real Jolt, the hash is <strong>Poseidon</strong> (a ZK-friendly hash over prime fields). We'll use <strong>SHA-256</strong>, just because it is in Python standard lib. The structure is the same as Poseidon: absorb values, squeeze challenges.</span>\n<span class=\"paragraph\">The transcript maintains a running <strong>state</strong> that absorbs values and squeezes challenges:</span>\n<div class=\"language-teratermmacro codehilite\"><pre><span></span><code><span class=\"nv\">absorb</span><span class=\"ss\">(</span><span class=\"nv\">value</span><span class=\"ss\">)</span>:<span class=\"w\">  </span><span class=\"nv\">state</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"nv\">hash</span><span class=\"ss\">(</span><span class=\"nv\">state</span>,<span class=\"w\"> </span><span class=\"nv\">value</span><span class=\"ss\">)</span>\n<span class=\"nv\">squeeze</span><span class=\"ss\">()</span>:<span class=\"w\">      </span><span class=\"nv\">challenge</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"nv\">hash</span><span class=\"ss\">(</span><span class=\"nv\">state</span>,<span class=\"w\"> </span><span class=\"s2\">&quot;challenge&quot;</span><span class=\"ss\">)</span><span class=\"c1\">; return challenge</span>\n</code></pre></div>\n<span class=\"paragraph\">Every value the prover sends gets absorbed. Every challenge gets squeezed. The state is a chain, changing any earlier value changes all later challenges.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "e0f4fe83d43154cbe5c8dcaffd9b7a6c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Determinism check:\n  Transcript 1: absorb(10), absorb(20), squeeze() = 43\n  Transcript 2: absorb(10), absorb(20), squeeze() = 43\n  Same? True \u2713\n\n  Transcript 3: absorb(10), absorb(21), squeeze() = 87\n  Different from transcript 1? True \u2713\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "656c32985a0681039affe139ec6f2af3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-2-rebuild-the-sumcheck-setup\">Step 2: Rebuild the sumcheck setup</h2>\n<span class=\"paragraph\">Same 4-cycle trace and constraint from Exercise 2.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "46ba6ecf5960cac698bba2644b5b0ff0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "338016bcfbee4327ef02964f2f04f686",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "d7475739eb0aea76d4b16f4411cad50d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-3-non-interactive-sumcheck-prover-side\">Step 3: Non-interactive sumcheck (prover side)</h2>\n<span class=\"paragraph\">The prover generates the <strong>entire proof</strong> alone. No interaction needed.</span>\n<span class=\"paragraph\">At each round, instead of waiting for the verifier to send a random challenge,\nthe prover:</span>\n<ol>\n<li>Computes the round polynomial</li>\n<li>Absorbs its evaluations into the transcript</li>\n<li>Squeezes a challenge from the transcript</li>\n</ol>\n<span class=\"paragraph\">The key insight: <strong>the challenges are derived from the prover's own messages</strong>.\nThe prover can't \"shop\" for good challenges because changing s1 changes r1,\nwhich changes everything downstream.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "43b3e9ac8928b59f4d7a3f08e01cb412",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "=== PROVER: Round 1 ===\n  s1 evaluations: [0, 0, 38, 17]\n  r1 (from hash): 57\n\n=== PROVER: Round 2 ===\n  s2 evaluations: [23, 0, 16, 16]\n  r2 (from hash): 50\n\n=== PROOF (what gets sent) ===\n  {'s1_evals': [0, 0, 38, 17], 's2_evals': [23, 0, 16, 16]}\n  Total: 8 field elements\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "6fa20880f9d9bb0703cbf7e3024d7485",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-4-non-interactive-verification\">Step 4: Non-interactive verification</h2>\n<span class=\"paragraph\">The verifier receives only the <strong>proof</strong> (the round polynomial evaluations).\nThey reconstruct everything else: challenges, consistency checks, final evaluation.</span>\n<span class=\"paragraph\">The verifier runs the <strong>exact same transcript</strong> as the prover. Since both absorb\nthe same values, they squeeze the same challenges. No communication needed.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "4da80da3edf0619b16c5085d0ba92206",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "=== VERIFIER ===\n\nRound 1: s1(0) + s1(1) = 0 + 0 = 0\n  Expected: 0\n  \u2713 Pass\n  r1 (recomputed from hash): 57\n  s1(57) = 23  (via Lagrange interpolation)\n\nRound 2: s2(0) + s2(1) = 23 + 0 = 23\n  Expected: s1(r1) = 23\n  \u2713 Pass\n  r2 (recomputed from hash): 50\n  s2(50) = 49  (via Lagrange interpolation)\n\nFinal check: C(57, 50)\n  Claimed (from s2): 49\n  Actual:            49\n  \u2713 Pass\n\n========================================\n\u2713 PROOF VERIFIED!\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "emfo",
+      "code_hash": "6302509c5599b4170f4105d0f407810d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"what-just-happened\">What just happened?</h2>\n<div class=\"language-scdoc codehilite\"><pre><span></span><code>PROVER (alone, offline)              VERIFIER (alone, later)\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500                \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ncompute s1                           receive proof = {s1_evals, s2_evals}\nabsorb s1 into transcript            absorb s1 into transcript\nr1 = squeeze()                       r1 = squeeze()  \u2190 SAME r1!\ncompute s2 (using r1)                check s1(0)+s1(1) = 0\nabsorb s2 into transcript            interpolate s1(r1)\nr2 = squeeze()                       check s2(0)+s2(1) = s1(r1)\n                                     absorb s2 into transcript\nsend proof = {s1_evals, s2_evals}    r2 = squeeze()  \u2190 SAME r2!\n                                     check C(r1,r2) = s2(r2)\n</code></pre></div>\n<span class=\"paragraph\">Both sides run the <strong>exact same transcript</strong>. The prover can't cheat because:</span>\n<ol>\n<li>The challenges are <strong>deterministic</strong>: anyone can recompute them from the proof</li>\n<li>The challenges are <strong>unpredictable</strong>: changing any prover message changes all subsequent challenges</li>\n<li>The proof is <strong>self-contained</strong>: no interaction needed, verify anytime</li>\n</ol>\n<span class=\"paragraph\">This is how Jolt works: the prover generates a proof offline, posts it on-chain, and the smart contract (verifier) replays the transcript to check it.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "2b8b7246723113e08b5a1a6bc6ddd4d6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"the-transcript-is-a-chain\">The transcript is a chain</h2>\n<span class=\"paragraph\">This is why <strong>transcript continuity</strong> matters so much in Jolt.\nEvery value absorbed changes all future challenges:</span>\n<div class=\"language-text codehilite\"><pre><span></span><code>absorb(s1) \u2192 state\u2081 \u2192 squeeze \u2192 r1\n                                  \u2193\nabsorb(s2) \u2192 state\u2082 \u2192 squeeze \u2192 r2    (depends on r1, which depends on s1)\n                                  \u2193\nabsorb(s3) \u2192 state\u2083 \u2192 squeeze \u2192 r3    (depends on everything above)\n</code></pre></div>\n<span class=\"paragraph\">If someone starts a <strong>fresh transcript</strong> (state=0) in the middle, they can\npredict future challenges and forge proofs. This is exactly the security bug\nthat was fixed in Jolt's recursion (the recursion transcript must continue\nfrom stages 1-7's final state, not start from zero).</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "19426d6f5559be88ea4132d28fc76ca3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"exercises\">Exercises</h2>\n<span class=\"paragraph\"><strong>1.</strong> The proof is <code>{s1_evals, s2_evals}</code>, 8 field elements total. Could the verifier check the proof with <strong>fewer</strong> values? What's the minimum the prover needs to send? <em>(Hint: the verifier knows <code>s1(0) + s1(1) = 0</code>, so one of those is redundant...)</em></span>\n<blockquote>\n<span class=\"paragraph\">Yes, <strong>6 instead of 8</strong>. The verifier knows <code>s1(0) + s1(1) = 0</code>, so <code>s1(1) = -s1(0)</code>, no need to send both. Same for round 2: <code>s2(0) + s2(1) = s1(r1)</code> means <code>s2(1)</code> is redundant. So you send 3 per round instead of 4. This is exactly the <strong>compressed univariate</strong> optimization that real Jolt uses.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>2.</strong> What happens if the prover tries to tamper with <code>s1_evals[2]</code>? Try changing it in the proof dict and re-running the verifier. Which check fails?</span>\n<blockquote>\n<span class=\"paragraph\">The tampered value gets absorbed into the transcript, so <code>r1</code> changes (different hash input -&gt; different challenge). Then <code>s1(r1)</code> via Lagrange interpolation gives a wrong value. Round 2's consistency check <code>s2(0) + s2(1) = s1(r1)</code> will fail \u2014 unless the prover also tampers with s2, but then <code>r2</code> changes and the final check <code>C(r1, r2) = s2(r2)</code> fails. The chain of hashes means you can't tamper with anything without breaking something downstream.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>3.</strong> We use SHA-256 here, which is a real cryptographic hash. Jolt uses <strong>Poseidon</strong> instead. Why? What makes Poseidon better suited for ZK circuits, even though SHA-256 is perfectly secure?</span>\n<blockquote>\n<span class=\"paragraph\"><strong>Circuit cost.</strong> When the verifier runs inside a Groth16 circuit (the whole point of transpilation), every hash becomes constraints. SHA-256 costs ~25,000 constraints per hash (lots of bitwise operations). Poseidon costs ~250 constraints per hash (designed as native field arithmetic, just additions and multiplications). Since the Jolt verifier hashes hundreds of times across 7 stages, that's millions of extra constraints with SHA-256 vs tens of thousands with Poseidon. Poseidon is ~100x cheaper in-circuit.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>4.</strong> The verifier uses Lagrange interpolation to evaluate <code>s1(r1)</code> from 4 points. Could they instead receive the polynomial <strong>coefficients</strong> directly? What are the tradeoffs?</span>\n<blockquote>\n<span class=\"paragraph\">Yes, both work. <strong>Evaluations</strong> (what we do here): the verifier needs Lagrange interpolation to evaluate at <code>r</code>, but the values are conceptually simple. <strong>Coefficients</strong>: the verifier evaluates directly via Horner's method (cheaper), but the prover converts from evaluations to coefficients first. Jolt actually sends <strong>compressed coefficients</strong>, all coefficients except the linear term, which the verifier recovers from the <code>s(0)+s(1)=claim</code> constraint. This is the <code>CompressedUniPoly</code> optimization.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>Next</strong>: Exercise 4 will introduce <strong>symbolic execution</strong>, running the same verifier code with symbolic values to record the operations as a circuit.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}
