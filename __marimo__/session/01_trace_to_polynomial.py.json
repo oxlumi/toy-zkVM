@@ -46,7 +46,7 @@
     },
     {
       "id": "bkHC",
-      "code_hash": "f00082613d5fdc3fe165c7cfa2c87e37",
+      "code_hash": "f3e28da26530342f627e4cbbdd94e384",
       "outputs": [
         {
           "type": "data",
@@ -59,7 +59,7 @@
         {
           "type": "stream",
           "name": "stdout",
-          "text": "Trace has T = 2 cycles\n\n  Cycle 0: MUL(3, 5) = 15\n  Cycle 1: ADD(16, 7) = 22\n",
+          "text": "Trace has T = 2 cycles\n\n  Cycle 0: MUL(3, 5) = 15\n  Cycle 1: ADD(15, 7) = 22\n",
           "mimetype": "text/plain"
         }
       ]
@@ -79,7 +79,7 @@
     },
     {
       "id": "PKri",
-      "code_hash": "aa2a5845379dadc98368200452e64907",
+      "code_hash": "7e4a56b8fb161f8077eee917f6d7d070",
       "outputs": [
         {
           "type": "data",
@@ -92,7 +92,7 @@
         {
           "type": "stream",
           "name": "stdout",
-          "text": "Checking left_mle on boolean points:\n  left~(0) = 3  (expected: 3)\n  left~(1) = 16  (expected: 16)\n  \u2713 Matches!\n\n  left~(50) = 71  <- this is the polynomial 'between' the data\n\n  Explicit: left~(x) = 3 + 13\u00b7x  (mod 97)\n",
+          "text": "Checking left_mle on boolean points:\n  left~(0) = 3  (expected: 3)\n  left~(1) = 15  (expected: 15)\n  \u2713 Matches!\n\n  left~(50) = 21  <- this is the polynomial 'between' the data\n\n  Explicit: left~(x) = 3 + 12\u00b7x  (mod 97)\n",
           "mimetype": "text/plain"
         }
       ]
@@ -125,7 +125,7 @@
         {
           "type": "stream",
           "name": "stdout",
-          "text": "Verifying all column MLEs on {0, 1}:\n  left~(0) = 3  (expected 3) \u2713\n  left~(1) = 16  (expected 16) \u2713\n  right~(0) = 5  (expected 5) \u2713\n  right~(1) = 7  (expected 7) \u2713\n  out~(0) = 15  (expected 15) \u2713\n  out~(1) = 22  (expected 22) \u2713\n  op~(0) = 0  (expected 0) \u2713\n  op~(1) = 1  (expected 1) \u2713\n",
+          "text": "Verifying all column MLEs on {0, 1}:\n  left~(0) = 3  (expected 3) \u2713\n  left~(1) = 15  (expected 15) \u2713\n  right~(0) = 5  (expected 5) \u2713\n  right~(1) = 7  (expected 7) \u2713\n  out~(0) = 15  (expected 15) \u2713\n  out~(1) = 22  (expected 22) \u2713\n  op~(0) = 0  (expected 0) \u2713\n  op~(1) = 1  (expected 1) \u2713\n",
           "mimetype": "text/plain"
         }
       ]
@@ -145,7 +145,7 @@
     },
     {
       "id": "RGSE",
-      "code_hash": "e45de5f34ce7cd47ab9bce54b6a91fb8",
+      "code_hash": "bd27852f50ea92fa7a8360ea278a24ff",
       "outputs": [
         {
           "type": "data",
@@ -158,7 +158,7 @@
         {
           "type": "stream",
           "name": "stdout",
-          "text": "Constraint check on each cycle:\n  C(0) = 0  \u2713 satisfied!\n  C(1) = 96  \u2717 VIOLATION!\n\n  C(42) = 51  (random point... is it still 0?)\n  It's 51, not 0. The constraint polynomial has degree > 1\n(because of the multiplication left\u00b7right, the MLE structure doesn't guarantee\n  that the constraint poly is zero beyond the hypercube)\n",
+          "text": "Constraint check on each cycle:\n  C(0) = 0  \u2713 satisfied!\n  C(1) = 0  \u2713 satisfied!\n\n  C(42) = 71  (random point... is it still 0?)\n  It's 71, not 0. The constraint polynomial has degree > 1\n(because of the multiplication left\u00b7right, the MLE structure doesn't guarantee\n  that the constraint poly is zero beyond the hypercube)\n",
           "mimetype": "text/plain"
         }
       ]
@@ -178,12 +178,12 @@
     },
     {
       "id": "emfo",
-      "code_hash": "3370b2762500a0dcd0a16c4c52f6f7d7",
+      "code_hash": "61e9d9958051b478fa7b6a175fcd2fd8",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"exercises-try-before-moving-on\">Exercises (try before moving on!)</h2>\n<span class=\"paragraph\"><strong>1.</strong> What happens if the prover lies and sets <code>out[0] = 16</code> instead of 15? Modify the trace above and re-run. Does the constraint check catch it?</span>\n<blockquote>\n<span class=\"paragraph\">In the constraint check we obtain: <code>C(0) = 0  \u2713 satisfied! C(1) = 96  \u2717 VIOLATION!</code>.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>2.</strong> Compute <code>right~(50)</code> by hand. The values are [5, 7], so: <code>right~(x) = 5\u00b7(1-x) + 7\u00b7x = 5 + 2x</code>. What's <code>right~(50) mod 97</code>?</span>\n<marimo-tex class=\"arithmatex\">||[\\text{right}~(50) = 5 + 2 \\times 50 \\mod 97 = 8||]</marimo-tex><span class=\"paragraph\"><strong>3.</strong> Why can't we just check <code>C(0) + C(1) = 0</code> directly without sumcheck?\nBecause a cheating prover can make the sum cancel to zero even with invalid constraints. In F_97, if the prover submits a bad trace where:</span>\n<span class=\"paragraph\">C(0) = 5    \u2190 constraint violated at cycle 0\n  C(1) = 92   \u2190 constraint violated at cycle 1</span>\n<span class=\"paragraph\">Then C(0) + C(1) = 5 + 92 = 97 = 0 mod 97. The sum is zero, but neither constraint is satisfied. The violations cancel out.</span>\n<span class=\"paragraph\">What sumcheck does differently is that it doesn't just check the sum. It introduces a random challenge r and ultimately checks C(r) at a random point. A cheating prover would need to make C zero at a point they can't predict in advance. By Schwartz-Zippel, a nonzero degree-d polynomial has at most d roots out of 97 possible values \u2014 so the chance of getting lucky is tiny (d/97 in our toy field, d/2\u00b2\u2075\u2074 in real systems).</span>\n<span class=\"paragraph\">The sum check \u03a3 C(x) = 0 is just the starting claim. The protocol then reduces it to a single random evaluation, which is what actually provides soundness.</span></span>"
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"exercises-try-before-moving-on\">Exercises (try before moving on!)</h2>\n<span class=\"paragraph\"><strong>1.</strong> What happens if the prover lies and sets <code>out[0] = 16</code> instead of 15? Modify the trace above and re-run. Does the constraint check catch it?</span>\n<blockquote>\n<span class=\"paragraph\">The constraint check catches it at cycle 0: <code>C(0) = 1 \u2717 VIOLATION!</code> (because 16 - 15 = 1), while <code>C(1) = 0 \u2713 satisfied!</code>. The lie shows up exactly where the wrong value was placed.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>2.</strong> Compute <code>right~(50)</code> by hand. The values are [5, 7], so: <code>right~(x) = 5\u00b7(1-x) + 7\u00b7x = 5 + 2x</code>. What's <code>right~(50) mod 97</code>?</span>\n<marimo-tex class=\"arithmatex\">||[\\text{right}~(50) = 5 + 2 \\times 50 \\mod 97 = 8||]</marimo-tex><span class=\"paragraph\"><strong>3.</strong> Why can't we just check <code>C(0) + C(1) = 0</code> directly without sumcheck?\nBecause a cheating prover can make the sum cancel to zero even with invalid constraints. In F_97, if the prover submits a bad trace where:</span>\n<span class=\"paragraph\">C(0) = 5    \u2190 constraint violated at cycle 0\n  C(1) = 92   \u2190 constraint violated at cycle 1</span>\n<span class=\"paragraph\">Then C(0) + C(1) = 5 + 92 = 97 = 0 mod 97. The sum is zero, but neither constraint is satisfied. The violations cancel out.</span>\n<span class=\"paragraph\">What sumcheck does differently is that it doesn't just check the sum. It introduces a random challenge r and ultimately checks C(r) at a random point. A cheating prover would need to make C zero at a point they can't predict in advance. By Schwartz-Zippel, a nonzero degree-d polynomial has at most d roots out of 97 possible values \u2014 so the chance of getting lucky is tiny (d/97 in our toy field, d/2\u00b2\u2075\u2074 in real systems).</span>\n<span class=\"paragraph\">The sum check \u03a3 C(x) = 0 is just the starting claim. The protocol then reduces it to a single random evaluation, which is what actually provides soundness.</span></span>"
           }
         }
       ],
