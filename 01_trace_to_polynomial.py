@@ -304,7 +304,7 @@ def _(mo):
 
     **1.** What happens if the prover lies and sets `out[0] = 16` instead of 15? Modify the trace above and re-run. Does the constraint check catch it?
 
-    > In the constraint check we obtain: `C(0) = 0  ✓ satisfied! C(1) = 96  ✗ VIOLATION!`.
+    > The constraint check catches it at cycle 0: `C(0) = 1 ✗ VIOLATION!` (because 16 - 15 = 1), while `C(1) = 0 ✓ satisfied!`. The lie shows up exactly where the wrong value was placed.
 
     **2.** Compute `right~(50)` by hand. The values are [5, 7], so: `right~(x) = 5·(1-x) + 7·x = 5 + 2x`. What's `right~(50) mod 97`?
 
