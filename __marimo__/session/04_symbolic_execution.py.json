@@ -1,0 +1,219 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.21.1",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "5f8f1e7e9f3fdc0a90a302f35f36f77f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"exercise-4-symbolic-execution\">Exercise 4: Symbolic Execution</h1>\n<span class=\"paragraph\"><strong>Goal</strong>: Run the <strong>same verifier code</strong> twice, once with real numbers, once with symbols, and see how the symbolic run produces an expression tree (AST) that <strong>is</strong> the circuit.</span>\n<span class=\"paragraph\">This is the core trick behind Jolt's transpilation pipeline.</span>\n<h2 id=\"the-idea-in-one-sentence\">The idea in one sentence</h2>\n<span class=\"paragraph\">Instead of computing <code>3 * 5 = 15</code>, record <code>Mul(3, 5)</code> as a node in a tree. At the end, the tree describes every operation the verifier performed, which is exactly the circuit a Groth16 prover needs.</span>\n<h2 id=\"why-this-works\">Why this works</h2>\n<span class=\"paragraph\">The Jolt verifier is generic over its field type: <code>fn verify&lt;F: Field&gt;(...)</code>. For real verification, <code>F = Fr</code> (BN254 scalar field) and it computes actual numbers. For transpilation, <code>F = MleAst</code> (symbolic type) and it records operations.</span>\n<span class=\"paragraph\"><strong>Same code, different type parameter.</strong> That's the entire trick.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "81e03bc7c5d3ce5d4f4b9c86364fcfca",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "4734c82492d516ad771f42de5d500dd6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-1-a-concrete-field-element\">Step 1: A concrete field element</h2>\n<span class=\"paragraph\">First, let's wrap F_97 in a class so we can swap it out later.\nThis is the \"real\" field, it computes actual values.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "9deec6db29356581cc8d1be4d4e2c715",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "c22f7be7e7e1137726e181e149ea4035",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-2-a-symbolic-field-element\">Step 2: A symbolic field element</h2>\n<span class=\"paragraph\">Now the magic. <code>SymbolicField</code> has the <strong>same interface</strong> as <code>ConcreteField</code>\n(add, sub, mul, eq), but instead of computing values, it builds an <strong>expression tree</strong>.</span>\n<h3 id=\"the-arena\">The arena</h3>\n<span class=\"paragraph\">All nodes live in a single global list called the <strong>arena</strong>. A <code>SymbolicField</code> value\nis just an integer index (a <code>node_id</code>) pointing into this list. It doesn't hold the\nexpression itself, it's lightweight, like a pointer.</span>\n<span class=\"paragraph\">When we create a variable:\n<div class=\"language-scdoc codehilite\"><pre><span></span><code>a = SymbolicField((&quot;Var&quot;, &quot;left&quot;))   # appends to arena, a.node_id = 0\nb = SymbolicField((&quot;Var&quot;, &quot;right&quot;))  # appends to arena, b.node_id = 1\n</code></pre></div></span>\n<span class=\"paragraph\">The arena now looks like:\n<div class=\"language-text codehilite\"><pre><span></span><code>arena[0] = (&quot;Var&quot;, &quot;left&quot;)\narena[1] = (&quot;Var&quot;, &quot;right&quot;)\n</code></pre></div></span>\n<h3 id=\"operations-grow-the-tree\">Operations grow the tree</h3>\n<span class=\"paragraph\">When we do <code>c = a + b</code>, it doesn't compute anything. It creates a new node that <strong>references</strong> the two children by their indices:</span>\n<div class=\"language-scdoc codehilite\"><pre><span></span><code>c = a + b   # appends (&quot;Add&quot;, 0, 1) to arena, c.node_id = 2\n</code></pre></div>\n<span class=\"paragraph\">Arena:\n<div class=\"language-splus codehilite\"><pre><span></span><code><span class=\"n\">arena</span><span class=\"p\">[</span><span class=\"m\">0</span><span class=\"p\">]</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"s\">&quot;Var&quot;</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"s\">&quot;left&quot;</span><span class=\"p\">)</span><span class=\"w\">      </span><span class=\"o\">&lt;-</span><span class=\"w\"> </span><span class=\"n\">leaf</span>\n<span class=\"n\">arena</span><span class=\"p\">[</span><span class=\"m\">1</span><span class=\"p\">]</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"s\">&quot;Var&quot;</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"s\">&quot;right&quot;</span><span class=\"p\">)</span><span class=\"w\">     </span><span class=\"o\">&lt;-</span><span class=\"w\"> </span><span class=\"n\">leaf</span>\n<span class=\"n\">arena</span><span class=\"p\">[</span><span class=\"m\">2</span><span class=\"p\">]</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"s\">&quot;Add&quot;</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"m\">0</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"m\">1</span><span class=\"p\">)</span><span class=\"w\">        </span><span class=\"o\">&lt;-</span><span class=\"w\"> </span><span class=\"n\">points</span><span class=\"w\"> </span><span class=\"n\">back</span><span class=\"w\"> </span><span class=\"n\">to</span><span class=\"w\"> </span><span class=\"n\">nodes</span><span class=\"w\"> </span><span class=\"m\">0</span><span class=\"w\"> </span><span class=\"n\">and</span><span class=\"w\"> </span><span class=\"m\">1</span>\n</code></pre></div></span>\n<span class=\"paragraph\">Operations can chain:\n<div class=\"language-scdoc codehilite\"><pre><span></span><code>d = c * a   # appends (&quot;Mul&quot;, 2, 0) to arena, d.node_id = 3\n</code></pre></div></span>\n<span class=\"paragraph\">Arena:\n<div class=\"language-splus codehilite\"><pre><span></span><code><span class=\"n\">arena</span><span class=\"p\">[</span><span class=\"m\">0</span><span class=\"p\">]</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"s\">&quot;Var&quot;</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"s\">&quot;left&quot;</span><span class=\"p\">)</span>\n<span class=\"n\">arena</span><span class=\"p\">[</span><span class=\"m\">1</span><span class=\"p\">]</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"s\">&quot;Var&quot;</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"s\">&quot;right&quot;</span><span class=\"p\">)</span>\n<span class=\"n\">arena</span><span class=\"p\">[</span><span class=\"m\">2</span><span class=\"p\">]</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"s\">&quot;Add&quot;</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"m\">0</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"m\">1</span><span class=\"p\">)</span><span class=\"w\">        </span><span class=\"o\">&lt;-</span><span class=\"w\"> </span><span class=\"n\">left</span><span class=\"w\"> </span><span class=\"o\">+</span><span class=\"w\"> </span><span class=\"n\">right</span>\n<span class=\"n\">arena</span><span class=\"p\">[</span><span class=\"m\">3</span><span class=\"p\">]</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"s\">&quot;Mul&quot;</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"m\">2</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"m\">0</span><span class=\"p\">)</span><span class=\"w\">        </span><span class=\"o\">&lt;-</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"n\">left</span><span class=\"w\"> </span><span class=\"o\">+</span><span class=\"w\"> </span><span class=\"n\">right</span><span class=\"p\">)</span><span class=\"w\"> </span><span class=\"o\">*</span><span class=\"w\"> </span><span class=\"n\">left</span>\n</code></pre></div></span>\n<span class=\"paragraph\">This is a <strong>DAG</strong> (directed acyclic graph). Node 0 is referenced by both node 2 and node 3, that's sharing. In Jolt's real arena (millions of nodes), this sharing is relevant for efficiency (CSE = common subexpression elimination).</span>\n<h3 id=\"equality-captures-constraints\">Equality captures constraints</h3>\n<span class=\"paragraph\">The <code>==</code> operator is special. Instead of comparing values, it records a <strong>constraint</strong>:</span>\n<div class=\"language-gdscript codehilite\"><pre><span></span><code><span class=\"nb\">assert</span><span class=\"w\"> </span><span class=\"n\">d</span><span class=\"w\"> </span><span class=\"o\">==</span><span class=\"w\"> </span><span class=\"n\">e</span><span class=\"w\">    </span><span class=\"c1\"># creates Sub(d, e), appends its node_id to constraints list</span>\n</code></pre></div>\n<span class=\"paragraph\">It also returns <code>True</code> unconditionally, so the verifier code doesn't stop at the assertion. The constraint says \"this expression must equal zero\", which becomes <code>api.AssertIsEqual(node, 0)</code> in the generated gnark circuit.</span>\n<span class=\"paragraph\">In Jolt, this is how <code>MleAst::eq</code> works: when in \"constraint mode\", it captures\nthe equality check instead of evaluating it.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "a18b9fd404deb3c61b995518e17b6a41",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "e99e897d571885b4a4ce005674fad50f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-3-same-code-two-behaviors\">Step 3: Same code, two behaviors</h2>\n<span class=\"paragraph\">Here's a tiny \"verifier\" function. It checks: does <code>left * right == expected</code>?</span>\n<span class=\"paragraph\">Watch what happens when we call it with <code>ConcreteField</code> vs <code>SymbolicField</code>:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "1fc0684c3c16848aa2f355c2d090ed77",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "2ff77477544123a78853b1637865084d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"what-just-happened\">What just happened?</h2>\n<span class=\"paragraph\">The <strong>same function</strong> <code>verify_multiplication</code> ran twice:</span>\n<table>\n<thead>\n<tr>\n<th>Run</th>\n<th>Field type</th>\n<th><code>left * right</code> does...</th>\n<th><code>== expected</code> does...</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Concrete</td>\n<td><code>ConcreteField</code></td>\n<td>Computes <code>3 * 5 = 15</code></td>\n<td>Checks <code>15 == 15</code> -&gt; True</td>\n</tr>\n<tr>\n<td>Symbolic</td>\n<td><code>SymbolicField</code></td>\n<td>Creates <code>(\"Mul\", Node#0, Node#1)</code> -&gt; Node#3</td>\n<td>Creates <code>(\"Sub\", Node#3, Node#2)</code> -&gt; constraint</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\">The symbolic run produced:</span>\n<ul>\n<li><strong>An expression tree</strong> (the arena) describing every operation</li>\n<li><strong>A constraint</strong> saying <code>Mul(left, right) - expected = 0</code></li>\n</ul>\n<span class=\"paragraph\">This is similar to what Jolt's transpiler does. The expression tree <strong>is</strong> the gnark circuit. The constraints <strong>are</strong> the <code>api.AssertIsEqual()</code> calls.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "9e920bf43b3fefa08ea84107626b3adc",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-4-a-bigger-example-the-sumcheck-verifier\">Step 4: A bigger example -&gt; the sumcheck verifier</h2>\n<span class=\"paragraph\">Let's symbolically execute a simplified version of the sumcheck verifier from Exercise 3. This is closer to what Jolt actually transpiles.</span>\n<span class=\"paragraph\">The verifier receives:</span>\n<ul>\n<li>Round polynomial evaluations (from the proof)</li>\n<li>Computes challenges via hashing</li>\n<li>Checks consistency</li>\n</ul>\n<span class=\"paragraph\">We'll run it symbolically to capture the full circuit.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "ce31bdb331100c968e810b1895b5b66a",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "8b87a139f1c867a9b27b1aefdf39679f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now let's run the verifier checks symbolically. Each <code>==</code> will capture a constraint.\nWe'll simplify and use a fixed \"hash\" for challenges (in reality, this would\nbe a symbolic Poseidon computation, adding more nodes to the arena).</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "d29464cf005a484244055abc90f308dd",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "38162b8318838d2382b3d24b3a554095",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"the-ast-as-a-graph\">The AST as a graph</h3>\n<span class=\"paragraph\">Let's visualize the arena as a DAG. Leaf nodes (variables and constants) are at the\ntop, operations flow downward, and the red nodes at the bottom are the constraints\n(the expressions that must equal zero).</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "5a77f4792942d881884c8ab1dc4e7f78",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "82a122392159da70d018445d7678a82f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Each path from a blue variable node down to a red constraint node traces one\nchain of operations the verifier performs. The constraints are where the verifier\nsays \"this must be zero\" -- those become <code>api.AssertIsEqual()</code> in gnark.</span>\n<span class=\"paragraph\">Notice how some nodes feed into multiple downstream operations.\nThat's the <strong>sharing</strong> that CSE exploits: compute it once, reuse the result.\nIn Jolt's real arena with millions of nodes, this saves enormous amounts of work.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "eeb62f22ae8b59edd32755c615f6651a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-5-from-arena-to-circuit\">Step 5: From arena to circuit</h2>\n<span class=\"paragraph\">The arena <strong>is</strong> the circuit. Each node becomes a gnark API call:</span>\n<table>\n<thead>\n<tr>\n<th>Arena node</th>\n<th>gnark code</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><code>(\"Var\", \"s1_eval_0\")</code></td>\n<td><code>circuit.S1Eval0</code> (witness field)</td>\n</tr>\n<tr>\n<td><code>(\"Const\", 0)</code></td>\n<td><code>frontend.Variable(0)</code></td>\n</tr>\n<tr>\n<td><code>(\"Add\", 0, 1)</code></td>\n<td><code>api.Add(circuit.S1Eval0, circuit.S1Eval1)</code></td>\n</tr>\n<tr>\n<td><code>(\"Sub\", 3, 2)</code></td>\n<td><code>api.Sub(node3, node2)</code></td>\n</tr>\n<tr>\n<td>Constraint on Node#X</td>\n<td><code>api.AssertIsEqual(nodeX, 0)</code></td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\">The transpiler walks the arena and emits Go code. That's the codegen step.\nLet's do it:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "5c8f053fcdf5bbb8519416ff14019f32",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "4236e6fe9bebbdade24ab6875f4ff0b2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"the-full-picture\">The full picture</h2>\n<div class=\"language-gdscript codehilite\"><pre><span></span><code><span class=\"n\">CONCRETE</span><span class=\"w\"> </span><span class=\"n\">RUN</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"n\">real</span><span class=\"w\"> </span><span class=\"n\">verification</span><span class=\"p\">)</span><span class=\"w\">         </span><span class=\"n\">SYMBOLIC</span><span class=\"w\"> </span><span class=\"n\">RUN</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"n\">transpilation</span><span class=\"p\">)</span>\n<span class=\"err\">\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500</span><span class=\"w\">        </span><span class=\"err\">\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500</span>\n<span class=\"n\">s1_0</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"mi\">42</span><span class=\"w\">                                </span><span class=\"n\">s1_0</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"n\">SymbolicField</span><span class=\"p\">(</span><span class=\"s2\">&quot;s1_eval_0&quot;</span><span class=\"p\">)</span>\n<span class=\"n\">s1_1</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"mi\">55</span><span class=\"w\">                                </span><span class=\"n\">s1_1</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"n\">SymbolicField</span><span class=\"p\">(</span><span class=\"s2\">&quot;s1_eval_1&quot;</span><span class=\"p\">)</span>\n\n<span class=\"n\">sum</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"n\">s1_0</span><span class=\"w\"> </span><span class=\"o\">+</span><span class=\"w\"> </span><span class=\"n\">s1_1</span><span class=\"w\">                        </span><span class=\"n\">sum</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"n\">s1_0</span><span class=\"w\"> </span><span class=\"o\">+</span><span class=\"w\"> </span><span class=\"n\">s1_1</span>\n<span class=\"w\">   </span><span class=\"err\">\u2192</span><span class=\"w\"> </span><span class=\"mi\">42</span><span class=\"w\"> </span><span class=\"o\">+</span><span class=\"w\"> </span><span class=\"mi\">55</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"mi\">0</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"n\">mod</span><span class=\"w\"> </span><span class=\"mi\">97</span><span class=\"p\">)</span><span class=\"w\">                  </span><span class=\"err\">\u2192</span><span class=\"w\"> </span><span class=\"n\">creates</span><span class=\"w\"> </span><span class=\"n\">Node</span><span class=\"p\">(</span><span class=\"s2\">&quot;Add&quot;</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"c1\">#0, #1)</span>\n\n<span class=\"nb\">assert</span><span class=\"w\"> </span><span class=\"n\">sum</span><span class=\"w\"> </span><span class=\"o\">==</span><span class=\"w\"> </span><span class=\"mi\">0</span><span class=\"w\">                          </span><span class=\"nb\">assert</span><span class=\"w\"> </span><span class=\"n\">sum</span><span class=\"w\"> </span><span class=\"o\">==</span><span class=\"w\"> </span><span class=\"mi\">0</span>\n<span class=\"w\">   </span><span class=\"err\">\u2192</span><span class=\"w\"> </span><span class=\"n\">checks</span><span class=\"w\"> </span><span class=\"mi\">0</span><span class=\"w\"> </span><span class=\"o\">==</span><span class=\"w\"> </span><span class=\"mi\">0</span><span class=\"w\"> </span><span class=\"err\">\u2192</span><span class=\"w\"> </span><span class=\"n\">True</span><span class=\"w\">                  </span><span class=\"err\">\u2192</span><span class=\"w\"> </span><span class=\"n\">captures</span><span class=\"w\"> </span><span class=\"n\">constraint</span><span class=\"p\">:</span><span class=\"w\"> </span><span class=\"n\">Add</span><span class=\"p\">(</span><span class=\"c1\">#0,#1) - 0 = 0</span>\n\n<span class=\"n\">Result</span><span class=\"p\">:</span><span class=\"w\"> </span><span class=\"s2\">&quot;proof is valid&quot;</span><span class=\"w\">                 </span><span class=\"n\">Result</span><span class=\"p\">:</span><span class=\"w\"> </span><span class=\"n\">arena</span><span class=\"w\"> </span><span class=\"o\">+</span><span class=\"w\"> </span><span class=\"n\">constraints</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"n\">CIRCUIT</span>\n</code></pre></div>\n<span class=\"paragraph\"><strong>This is exactly what Jolt does.</strong> The <code>TranspilableVerifier</code> runs the same\nverification code with <code>MleAst</code> instead of <code>Fr</code>. The arena accumulates millions\nof nodes. The 17 assertions become 17 constraints. The codegen walks the arena\nand emits <code>stages_circuit.go</code>.</span>\n<span class=\"paragraph\">The witness values (42, 55, ...) go into <code>stages_witness.json</code>.\nThe circuit structure (Add, Mul, Sub, ...) goes into <code>stages_circuit.go</code>.\ngnark compiles the circuit to R1CS, Groth16 proves it, and you get 164 bytes.</span>\n<hr />\n<h2 id=\"how-this-maps-to-jolt\">How this maps to Jolt</h2>\n<table>\n<thead>\n<tr>\n<th>Our toy</th>\n<th>Jolt</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><code>SymbolicField</code></td>\n<td><code>MleAst</code></td>\n</tr>\n<tr>\n<td><code>arena</code> (list)</td>\n<td><code>NODE_ARENA</code> (global <code>Vec&lt;Node&gt;</code>)</td>\n</tr>\n<tr>\n<td><code>constraints</code> (list)</td>\n<td><code>take_constraints()</code></td>\n</tr>\n<tr>\n<td><code>node_id</code> (int)</td>\n<td><code>NodeId</code> (usize)</td>\n</tr>\n<tr>\n<td><code>__eq__</code> captures constraint</td>\n<td><code>PartialEq::eq</code> in constraint mode</td>\n</tr>\n<tr>\n<td><code>generate_circuit()</code></td>\n<td><code>gnark_codegen::generate_circuit_from_bundle()</code></td>\n</tr>\n<tr>\n<td><code>(\"Var\", \"s1_eval_0\")</code></td>\n<td><code>Atom::Var(0)</code></td>\n</tr>\n<tr>\n<td><code>(\"Add\", 0, 1)</code></td>\n<td><code>Node::Add(Edge(0), Edge(1))</code></td>\n</tr>\n</tbody>\n</table></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "4c9652a2918a8434b9531e531d91cdb4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"exercises\">Exercises</h2>\n<span class=\"paragraph\"><strong>1.</strong> Add a <code>__neg__</code> method to <code>SymbolicField</code> that creates a <code>(\"Neg\", node_id)</code> node. Then try <code>result = -s1_0</code> and check the arena.</span>\n<blockquote>\n<span class=\"paragraph\">Add this to the class:\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"k\">def</span><span class=\"w\"> </span><span class=\"fm\">__neg__</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"p\">):</span>\n    <span class=\"k\">return</span> <span class=\"n\">SymbolicField</span><span class=\"p\">((</span><span class=\"s2\">&quot;Neg&quot;</span><span class=\"p\">,</span> <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">node_id</span><span class=\"p\">))</span>\n</code></pre></div>\nThen <code>-s1_0</code> creates a new node <code>(\"Neg\", 0)</code> in the arena. The node references its single child by index, just like <code>Add</code> and <code>Mul</code> reference two children.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>2.</strong> Our <code>generate_circuit</code> doesn't do CSE (Common Subexpression Elimination). If <code>node5 = Add(node0, node1)</code> and both <code>node7</code> and <code>node9</code> reference <code>node5</code>, the code emits <code>node5</code> once and reuses it. But what if we had <strong>inlined</strong> the expression instead? How many times would <code>Add(node0, node1)</code> appear?</span>\n<blockquote>\n<span class=\"paragraph\"><strong>Twice</strong> \u2014 once inside <code>node7</code> and once inside <code>node9</code>. Without the arena's sharing, every reference becomes a full copy of the subtree. In Jolt's real circuit with millions of nodes, this would cause exponential blowup. The arena + CSE is what keeps the generated code linear in size. Jolt's codegen tracks reference counts: nodes used more than once get a named variable (<code>cse_0</code>, <code>cse_1</code>, ...), single-use nodes get inlined.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>3.</strong> In Jolt, the arena for fibonacci(50) has <strong>millions</strong> of nodes. The generated <code>stages_circuit.go</code> is 6MB. Why is it so large? <em>(Hint: each sumcheck round adds Poseidon hash nodes + polynomial evaluation nodes, and there are hundreds of rounds across 7 stages.)</em></span>\n<blockquote>\n<span class=\"paragraph\">Each sumcheck round adds: ~250 nodes for Poseidon hashing (absorb coefficients + squeeze challenge) + polynomial evaluation nodes (multiply coefficients by powers of the challenge). Across 7 stages with ~100+ total rounds, that's 100 \u00d7 (250 + evaluation nodes) = tens of thousands of nodes just for the transcript. Then add the constraint evaluation nodes, Lagrange interpolation, eq polynomial evaluations, and the batching logic. It adds up to millions of nodes, which emit as millions of <code>api.Add/Mul/Sub</code> calls in Go.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>4.</strong> Why does <code>__eq__</code> return <code>True</code> even for symbolic values? What would happen if it returned <code>False</code>? <em>(Hint: think about what the verifier code does after an <code>assert</code>.)</em></span>\n<blockquote>\n<span class=\"paragraph\">The verifier code does <code>assert result == expected</code>. If <code>__eq__</code> returned <code>False</code>, Python would raise an <code>AssertionError</code> and the symbolic execution would <strong>stop</strong>. We'd never reach the later constraints. By returning <code>True</code>, we let the verifier code run to completion, capturing <strong>all</strong> 17 assertions. The actual equality check isn't lost \u2014 it's recorded as a constraint in the arena. Jolt's <code>MleAst::eq</code> does the same thing: returns <code>true</code> in constraint mode so <code>verify()</code> keeps running.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>Next</strong>: Exercise 5 puts everything together \u2014 trace, sumcheck, Fiat-Shamir, and symbolic execution \u2014 into one end-to-end pipeline.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [],
+      "console": []
+    }
+  ]
+}
