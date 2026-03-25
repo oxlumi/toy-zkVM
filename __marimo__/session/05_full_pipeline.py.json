@@ -1,0 +1,324 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.21.1",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "b5c8ded92518c34efdf854d992e763c5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"exercise-5-the-full-pipeline\">Exercise 5: The Full Pipeline</h1>\n<span class=\"paragraph\"><strong>Goal</strong>: Run the complete pipeline end-to-end, from program execution to circuit verification.</span>\n<span class=\"paragraph\">This notebook combines everything from Exercises 1-4:</span>\n<div class=\"language-splus codehilite\"><pre><span></span><code><span class=\"n\">Program</span><span class=\"w\">  </span><span class=\"o\">-&gt;</span><span class=\"w\">  </span><span class=\"n\">Trace</span><span class=\"w\">  </span><span class=\"o\">-&gt;</span><span class=\"w\">  </span><span class=\"n\">Polynomials</span><span class=\"w\">  </span><span class=\"o\">-&gt;</span><span class=\"w\">  </span><span class=\"n\">Sumcheck</span><span class=\"w\"> </span><span class=\"nf\">Proof </span><span class=\"p\">(</span><span class=\"n\">prover</span><span class=\"p\">)</span>\n<span class=\"w\">                                                  </span><span class=\"o\">|</span>\n<span class=\"w\">                                                  </span><span class=\"n\">v</span>\n<span class=\"w\">                          </span><span class=\"n\">Circuit</span><span class=\"w\">  </span><span class=\"o\">&lt;-</span><span class=\"w\">  </span><span class=\"n\">Symbolic</span><span class=\"w\"> </span><span class=\"n\">Verifier</span><span class=\"w\">  </span><span class=\"o\">&lt;-</span><span class=\"w\">  </span><span class=\"n\">Fiat</span><span class=\"o\">-</span><span class=\"n\">Shamir</span>\n<span class=\"w\">                            </span><span class=\"o\">|</span>\n<span class=\"w\">                            </span><span class=\"n\">v</span>\n<span class=\"w\">                      </span><span class=\"n\">Verify</span><span class=\"w\"> </span><span class=\"n\">with</span><span class=\"w\"> </span><span class=\"nf\">Witness </span><span class=\"p\">(</span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"s\">&quot;Groth16&quot;</span><span class=\"p\">)</span>\n</code></pre></div>\n<span class=\"paragraph\">We'll see each step produce concrete output that feeds into the next.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "76c74fea10b028ee345e1e2401406f22",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"phase-1-the-field\">Phase 1: The Field</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "1e93a1dae51bbf9580788ff5e9293ba9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "335a9a0851d8511713ac03e1b68fa0d4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"phase-2-program-execution-trace\">Phase 2: Program Execution -&gt; Trace</h2>\n<span class=\"paragraph\">Our program: <code>result = ((3 * 5) + 7) * 4 = 88</code></span>\n<span class=\"paragraph\">The CPU executes it in 4 cycles. This trace is the <strong>witness</strong>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "0d8762f6538afa63c314a4cc9225b39a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "EXECUTION TRACE:\n  Cycle | Op  | Left | Right | Out\n  ------+-----+------+-------+----\n    0   | MUL |   3  |    5  | 15\n    1   | ADD |  15  |    7  | 22\n    2   | MUL |  22  |    4  | 88\n    3   | ADD |  88  |    0  | 88\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "PKri",
+      "code_hash": "b057ab7f761b7a37c35da1f81697f12e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"phase-3-trace-polynomials-mles\">Phase 3: Trace -&gt; Polynomials (MLEs)</h2>\n<span class=\"paragraph\">Each column becomes a multilinear polynomial in 2 variables.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "5e31eca9df8107601d7c3f745e4718f3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "bffc2e4e94d0564bf180cc21a31d6207",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "CONSTRAINT CHECK:\n  C(0,0) = 0  \u2713\n  C(0,1) = 0  \u2713\n  C(1,0) = 0  \u2713\n  C(1,1) = 0  \u2713\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "f5c0d60212da0198c177203cc7dac064",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"phase-4-prover-generates-sumcheck-proof\">Phase 4: Prover generates sumcheck proof</h2>\n<span class=\"paragraph\">The prover computes the round polynomials and derives challenges via Fiat-Shamir.\nThe output is the <strong>proof</strong>: just the polynomial evaluations.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "e3d925ffe2756f3876403c1d5aff7689",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "679eb3108392bab66f2a018910a16bdd",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "PROVER OUTPUT:\n  s1 evals: [0, 0, 38, 17]\n  r1 (from SHA-256): 57\n  s2 evals: [23, 0, 16, 16]\n  r2 (from SHA-256): 50\n  C(r1, r2) = 49\n\n  Proof size: 9 field elements\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "emfo",
+      "code_hash": "2f9f19ee9b484a252b5ec4207a34139f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"phase-5-symbolic-execution-of-the-verifier\">Phase 5: Symbolic Execution of the Verifier</h2>\n<span class=\"paragraph\">Now the key step. We run the <strong>verifier</strong> with symbolic values to capture the circuit.</span>\n<span class=\"paragraph\">The verifier receives the proof, replays the Fiat-Shamir transcript,\nand checks consistency. Running it symbolically records every operation\nas an AST node and every assertion as a constraint.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "990ed1f92ba1b3e9213395ff4f491e2a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "a83d28080fbcc5835f56d694788fcf66",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "SYMBOLIC EXECUTION COMPLETE:\n  Arena: 37 nodes\n  Constraints: 3\n  Challenges: r1=57, r2=50\n\n  Witness variables: 9 (s1[0..3], s2[0..3], c_final)\n  Internal nodes: 28\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "iLit",
+      "code_hash": "c2821eeae256c7176ae40292a832cf83",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"phase-6-code-generation\">Phase 6: Code Generation</h2>\n<span class=\"paragraph\">Walk the arena and emit circuit code. This is what <code>gnark_codegen.rs</code> does in Jolt.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "b2dceac8c01f9f2563a8e5b0f7592c2b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "GENERATED CIRCUIT:\n============================================================\nfunc (c *Circuit) Define(api frontend.API) error {\n    // n0 = circuit.s1_0\n    // n1 = circuit.s1_1\n    // n2 = circuit.s1_2\n    // n3 = circuit.s1_3\n    // n4 = circuit.s2_0\n    // n5 = circuit.s2_1\n    // n6 = circuit.s2_2\n    // n7 = circuit.s2_3\n    // n8 = circuit.c_final\n    n9 := frontend.Variable(0)\n    n10 := api.Add(n0, n1)\n    n11 := api.Sub(n10, n9)\n    n12 := frontend.Variable(22)\n    n13 := api.Mul(n12, n0)\n    n14 := frontend.Variable(61)\n    n15 := api.Mul(n14, n1)\n    n16 := api.Add(n13, n15)\n    n17 := frontend.Variable(49)\n    n18 := api.Mul(n17, n2)\n    n19 := api.Add(n16, n18)\n    n20 := frontend.Variable(63)\n    n21 := api.Mul(n20, n3)\n    n22 := api.Add(n19, n21)\n    n23 := api.Add(n4, n5)\n    n24 := api.Sub(n23, n22)\n    n25 := frontend.Variable(6)\n    n26 := api.Mul(n25, n4)\n    n27 := frontend.Variable(43)\n    n28 := api.Mul(n27, n5)\n    n29 := api.Add(n26, n28)\n    n30 := frontend.Variable(43)\n    n31 := api.Mul(n30, n6)\n    n32 := api.Add(n29, n31)\n    n33 := frontend.Variable(6)\n    n34 := api.Mul(n33, n7)\n    n35 := api.Add(n32, n34)\n    n36 := api.Sub(n35, n8)\n\n    api.AssertIsEqual(n11, 0)  // constraint 0\n    api.AssertIsEqual(n24, 0)  // constraint 1\n    api.AssertIsEqual(n36, 0)  // constraint 2\n    return nil\n}\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "ffc8aae11ce4bb592351f46a6d042a85",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"phase-7-verify-with-witness-groth16\">Phase 7: Verify with Witness (\"Groth16\")</h2>\n<span class=\"paragraph\">In real Groth16, the prover uses the circuit + witness to generate a 164-byte proof.\nHere, we'll do the equivalent: <strong>evaluate every arena node with the concrete witness\nvalues and check that all constraints equal zero.</strong></span>\n<span class=\"paragraph\">If this passes, it means the circuit is satisfiable with this witness \u2014\nthe same thing Groth16 proves, just without the cryptography.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "5d72ba53904a8d31d0a00984885b5aa4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "CIRCUIT EVALUATION WITH WITNESS:\n============================================================\n\nConstraint checks:\n  Constraint 0: node n11 = 0  \u2713\n  Constraint 1: node n24 = 0  \u2713\n  Constraint 2: node n36 = 0  \u2713\n\n============================================================\n\u2713 ALL CONSTRAINTS SATISFIED \u2014 PROOF WOULD VERIFY!\n  Circuit size: 37 nodes, 3 constraints\n  Witness size: 9 field elements\n  In real Groth16: this becomes a 164-byte proof\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "757a39e821a6106d8f084e9876394b9c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"the-complete-pipeline\">The Complete Pipeline</h2>\n<span class=\"paragraph\">Here's everything that just happened:</span>\n<div class=\"language-gdscript codehilite\"><pre><span></span><code><span class=\"n\">Phase</span><span class=\"w\"> </span><span class=\"mi\">1</span><span class=\"p\">:</span><span class=\"w\"> </span><span class=\"n\">Field</span><span class=\"w\"> </span><span class=\"n\">arithmetic</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"n\">F_97</span><span class=\"p\">)</span>\n<span class=\"w\">    </span><span class=\"o\">|</span>\n<span class=\"n\">Phase</span><span class=\"w\"> </span><span class=\"mi\">2</span><span class=\"p\">:</span><span class=\"w\"> </span><span class=\"n\">Program</span><span class=\"w\"> </span><span class=\"n\">execution</span><span class=\"w\"> </span><span class=\"o\">-&gt;</span><span class=\"w\"> </span><span class=\"n\">trace</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"mi\">4</span><span class=\"w\"> </span><span class=\"n\">cycles</span><span class=\"w\"> </span><span class=\"n\">x</span><span class=\"w\"> </span><span class=\"mi\">4</span><span class=\"w\"> </span><span class=\"n\">wires</span><span class=\"p\">)</span>\n<span class=\"w\">    </span><span class=\"o\">|</span>\n<span class=\"n\">Phase</span><span class=\"w\"> </span><span class=\"mi\">3</span><span class=\"p\">:</span><span class=\"w\"> </span><span class=\"n\">Trace</span><span class=\"w\"> </span><span class=\"n\">columns</span><span class=\"w\"> </span><span class=\"o\">-&gt;</span><span class=\"w\"> </span><span class=\"n\">MLE</span><span class=\"w\"> </span><span class=\"n\">polynomials</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"mi\">2</span><span class=\"w\"> </span><span class=\"n\">variables</span><span class=\"w\"> </span><span class=\"n\">each</span><span class=\"p\">)</span>\n<span class=\"w\">    </span><span class=\"o\">|</span>\n<span class=\"n\">Phase</span><span class=\"w\"> </span><span class=\"mi\">4</span><span class=\"p\">:</span><span class=\"w\"> </span><span class=\"n\">PROVER</span><span class=\"w\"> </span><span class=\"n\">runs</span><span class=\"w\"> </span><span class=\"n\">sumcheck</span>\n<span class=\"w\">    </span><span class=\"o\">|</span><span class=\"w\">     </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">computes</span><span class=\"w\"> </span><span class=\"nb\">round</span><span class=\"w\"> </span><span class=\"n\">polynomials</span><span class=\"w\"> </span><span class=\"n\">s1</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"n\">s2</span>\n<span class=\"w\">    </span><span class=\"o\">|</span><span class=\"w\">     </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">derives</span><span class=\"w\"> </span><span class=\"n\">challenges</span><span class=\"w\"> </span><span class=\"n\">via</span><span class=\"w\"> </span><span class=\"n\">SHA</span><span class=\"o\">-</span><span class=\"mi\">256</span><span class=\"w\"> </span><span class=\"n\">transcript</span>\n<span class=\"w\">    </span><span class=\"o\">|</span><span class=\"w\">     </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">outputs</span><span class=\"w\"> </span><span class=\"n\">proof</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"p\">{</span><span class=\"n\">s1_evals</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"n\">s2_evals</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"n\">c_final</span><span class=\"p\">}</span>\n<span class=\"w\">    </span><span class=\"o\">|</span>\n<span class=\"n\">Phase</span><span class=\"w\"> </span><span class=\"mi\">5</span><span class=\"p\">:</span><span class=\"w\"> </span><span class=\"n\">SYMBOLIC</span><span class=\"w\"> </span><span class=\"n\">EXECUTION</span><span class=\"w\"> </span><span class=\"n\">of</span><span class=\"w\"> </span><span class=\"n\">verifier</span>\n<span class=\"w\">    </span><span class=\"o\">|</span><span class=\"w\">     </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">same</span><span class=\"w\"> </span><span class=\"n\">verification</span><span class=\"w\"> </span><span class=\"n\">logic</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"n\">but</span><span class=\"w\"> </span><span class=\"n\">with</span><span class=\"w\"> </span><span class=\"n\">Sym</span><span class=\"w\"> </span><span class=\"n\">instead</span><span class=\"w\"> </span><span class=\"n\">of</span><span class=\"w\"> </span><span class=\"nb nb-Type\">int</span>\n<span class=\"w\">    </span><span class=\"o\">|</span><span class=\"w\">     </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">captures</span><span class=\"w\"> </span><span class=\"o\">~</span><span class=\"mi\">40</span><span class=\"w\"> </span><span class=\"n\">arena</span><span class=\"w\"> </span><span class=\"n\">nodes</span><span class=\"w\"> </span><span class=\"ow\">and</span><span class=\"w\"> </span><span class=\"mi\">3</span><span class=\"w\"> </span><span class=\"n\">constraints</span>\n<span class=\"w\">    </span><span class=\"o\">|</span><span class=\"w\">     </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">this</span><span class=\"w\"> </span><span class=\"k\">is</span><span class=\"w\"> </span><span class=\"n\">what</span><span class=\"w\"> </span><span class=\"n\">Jolt</span><span class=\"s1\">&#39;s transpiler does</span>\n<span class=\"w\">    </span><span class=\"o\">|</span>\n<span class=\"n\">Phase</span><span class=\"w\"> </span><span class=\"mi\">6</span><span class=\"p\">:</span><span class=\"w\"> </span><span class=\"n\">CODE</span><span class=\"w\"> </span><span class=\"n\">GENERATION</span>\n<span class=\"w\">    </span><span class=\"o\">|</span><span class=\"w\">     </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">walk</span><span class=\"w\"> </span><span class=\"n\">arena</span><span class=\"w\"> </span><span class=\"o\">-&gt;</span><span class=\"w\"> </span><span class=\"n\">emit</span><span class=\"w\"> </span><span class=\"n\">gnark</span><span class=\"w\"> </span><span class=\"n\">API</span><span class=\"w\"> </span><span class=\"n\">calls</span>\n<span class=\"w\">    </span><span class=\"o\">|</span><span class=\"w\">     </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">constraints</span><span class=\"w\"> </span><span class=\"o\">-&gt;</span><span class=\"w\"> </span><span class=\"n\">api</span><span class=\"o\">.</span><span class=\"n\">AssertIsEqual</span><span class=\"p\">()</span>\n<span class=\"w\">    </span><span class=\"o\">|</span><span class=\"w\">     </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">this</span><span class=\"w\"> </span><span class=\"k\">is</span><span class=\"w\"> </span><span class=\"n\">gnark_codegen</span><span class=\"o\">.</span><span class=\"n\">rs</span>\n<span class=\"w\">    </span><span class=\"o\">|</span>\n<span class=\"n\">Phase</span><span class=\"w\"> </span><span class=\"mi\">7</span><span class=\"p\">:</span><span class=\"w\"> </span><span class=\"n\">VERIFY</span><span class=\"w\"> </span><span class=\"n\">with</span><span class=\"w\"> </span><span class=\"n\">witness</span>\n\n<span class=\"w\">        </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">evaluate</span><span class=\"w\"> </span><span class=\"n\">arena</span><span class=\"w\"> </span><span class=\"n\">with</span><span class=\"w\"> </span><span class=\"n\">concrete</span><span class=\"w\"> </span><span class=\"n\">proof</span><span class=\"w\"> </span><span class=\"n\">values</span>\n\n<span class=\"w\">        </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">check</span><span class=\"w\"> </span><span class=\"n\">all</span><span class=\"w\"> </span><span class=\"n\">constraints</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"mi\">0</span>\n\n<span class=\"w\">        </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">equivalent</span><span class=\"w\"> </span><span class=\"n\">to</span><span class=\"w\"> </span><span class=\"n\">Groth16</span><span class=\"w\"> </span><span class=\"n\">prove</span><span class=\"w\"> </span><span class=\"o\">+</span><span class=\"w\"> </span><span class=\"n\">verify</span>\n</code></pre></div>\n<hr />\n<h2 id=\"how-this-maps-to-real-jolt\">How this maps to real Jolt</h2>\n<table>\n<thead>\n<tr>\n<th>Our toy pipeline</th>\n<th>Real Jolt</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>4-cycle trace</td>\n<td>65536-cycle RISC-V trace</td>\n</tr>\n<tr>\n<td>4 columns, 1 constraint</td>\n<td>~40 polynomial types, 5 properties</td>\n</tr>\n<tr>\n<td>2 sumcheck rounds</td>\n<td>~100+ rounds across 7 stages</td>\n</tr>\n<tr>\n<td>SHA-256 transcript</td>\n<td>Poseidon transcript</td>\n</tr>\n<tr>\n<td><code>Sym</code> class</td>\n<td><code>MleAst</code> type</td>\n</tr>\n<tr>\n<td><code>sym_arena</code> list</td>\n<td><code>NODE_ARENA</code> global Vec</td>\n</tr>\n<tr>\n<td><code>assert ==</code> captures constraint</td>\n<td><code>PartialEq::eq</code> in constraint mode</td>\n</tr>\n<tr>\n<td>Print gnark pseudocode</td>\n<td><code>gnark_codegen.rs</code> emits Go</td>\n</tr>\n<tr>\n<td>Evaluate arena with witness</td>\n<td>gnark Groth16 prove + verify</td>\n</tr>\n<tr>\n<td>3 constraints</td>\n<td>17 assertions (2.86M R1CS constraints)</td>\n</tr>\n<tr>\n<td>~40 arena nodes</td>\n<td>Millions of arena nodes</td>\n</tr>\n<tr>\n<td>9 witness values</td>\n<td>Thousands of witness values</td>\n</tr>\n<tr>\n<td>All in F_97</td>\n<td>All in F_r (BN254, 254-bit prime)</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\">The <strong>structure is identical</strong>. The scale is different.</span>\n<hr />\n<h2 id=\"what-groth16-adds\">What Groth16 adds</h2>\n<span class=\"paragraph\">Our Phase 7 just evaluates the circuit directly. Real Groth16 does something\nmuch more powerful: it generates a <strong>164-byte proof</strong> that the circuit is satisfiable,\nwithout revealing the witness. The verifier checks the proof in ~3ms without\never seeing the witness values.</span>\n<span class=\"paragraph\">This is what makes it useful for blockchains: post the 164-byte proof on-chain,\nthe smart contract verifies it for ~250K gas, and nobody learns the execution trace.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "2a315d2c5409092515561b6c1183742a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"final-exercises\">Final Exercises</h2>\n<span class=\"paragraph\"><strong>1.</strong> Corrupt one witness value (e.g., change <code>s1_evals[0]</code>) in the proof and re-run. Which constraint fails? Why?</span>\n<blockquote>\n<span class=\"paragraph\">Constraint 0 (round 1 consistency) fails, because <code>s1(0) + s1(1)</code> no longer equals 0. Constraints 1 and 2 likely also fail, because the Lagrange interpolation <code>s1(r1)</code> depends on all four <code>s1</code> evaluation points, changing one changes the interpolated value, making <code>s2(0) + s2(1) != s1(r1)</code>. Note: in our notebook, the challenges (r1, r2) are baked into the circuit as constants during symbolic execution, so they don't change. The corruption cascades through the <strong>Lagrange interpolation</strong> (which references the symbolic witness variables), not through re-hashing.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>2.</strong> Count the arena nodes that are <code>Mul</code> operations. In Groth16, each multiplication roughly corresponds to one R1CS constraint. How many \"Groth16 constraints\" does our toy circuit have?</span>\n<blockquote>\n<span class=\"paragraph\">Count the <code>Mul</code> nodes in the arena printout. There are <strong>8</strong> multiplications (the Lagrange interpolation does <code>Const * Var</code> for each of the 4 basis values, twice, once for <code>s1</code> and once for <code>s2</code>). So our toy circuit has roughly 8 R1CS constraints. Compared to Jolt's 2.86M, same structure, vastly different scale.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>3.</strong> In real Jolt, the symbolic Poseidon hash creates hundreds of additional arena nodes per hash call (additions and multiplications implementing the Poseidon permutation). If there are ~200 hash calls across 7 stages, and each creates ~250 nodes, how many arena nodes come from hashing alone?</span>\n<blockquote>\n<span class=\"paragraph\">200 x 250 = <strong>50,000 nodes</strong> just from hashing. That's a significant chunk of the total arena, and it's why Poseidon (~250 constraints/hash) was chosen over SHA-256 (~25,000 constraints/hash). With SHA-256, hashing alone would produce 200 x 25,000 = 5,000,000 nodes, more than the entire current circuit.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>4.</strong> The proof has 9 field elements (4 + 4 + 1). In real Jolt, the proof is much larger (thousands of field elements for sumcheck round polynomials across 7 stages). But the Groth16 proof is always 164 bytes. Why doesn't proof size grow with circuit size?</span>\n<blockquote>\n<span class=\"paragraph\">Groth16 is a <strong>succinct</strong> proof system. The proof is always 3 group elements (2 G1 points + 1 G2 point on BN254), which gnark serializes to 164 bytes regardless of circuit size. The Jolt proof (sumcheck polynomials, commitments, etc.) is the <strong>witness</strong> to the Groth16 circuit, it goes into the prover, not into the proof. The Groth16 proof attests that \"there exists a witness satisfying all 2.86M constraints\" without revealing the witness itself. Circuit size affects <strong>proving time</strong>, not proof size.</span>\n</blockquote>\n<span class=\"paragraph\"><strong>5.</strong> We skipped one thing: the verifier's \"final check\" uses <code>c_final</code> from the proof, but in real Jolt, C(r1,r2) is computed from the committed polynomials via a PCS opening proof (Hyrax). Why can't we just trust the prover's claimed value?</span>\n<blockquote>\n<span class=\"paragraph\">Because the prover could lie. If we accept <code>c_final</code> from the prover without proof, they can set it to whatever makes the sumcheck pass, even for an invalid trace. The <strong>polynomial commitment scheme</strong> (PCS) binds the prover: they committed to the polynomials at the start, and the opening proof (Hyrax) proves that <code>C(r1, r2)</code> is consistent with those commitments. The verifier doesn't trust the value, they verify it against the commitment. This is Stage 8 of Jolt, using Hyrax over Grumpkin for efficient in-circuit MSMs.</span>\n</blockquote></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}
